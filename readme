@@ -1,6 +1,6 @@
 - Right-click on PowerShell and select "Run as Administrator"
 - Navigate to the script location
-- Execute: .\Remove-WindowsBloatware.ps1
+- Execute: .\De-Bloater.ps1
 -----
 
 * If you get execution policy errors, run
