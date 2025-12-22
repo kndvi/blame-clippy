@@ -1,6 +1,4 @@
-- Right-click on PowerShell and select "Run as Administrator"
-- Navigate to the script location
-- Execute: .\DeBloatW11.ps1
+- Right-click on Run.bat and select "Run as Administrator"
 -----
 
 * If you get execution policy errors, run
