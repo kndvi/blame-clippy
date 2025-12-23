@@ -109,20 +109,20 @@ $applist = @(
     "Wunderlist" # To-do list app (Acquired by Microsoft)
 )
 
-Write-Host "---------------------"
-Write-Host "Removing Bloatware..."
-Write-Host "---------------------"
+Write-Host "------------------------"
+Write-Host "-- Removing Bloatware --"
+Write-Host "------------------------"
 Write-Host ""
 foreach ($app in $applist) {
-    Write-Host "Attempting to remove $app..."
+    Write-Host ">> Attempting to remove $app..."
     # Use Remove-AppxPackage to remove all other apps
     $app = '*' + $app + '*'
     try {
         Get-AppxPackage -Name $app -AllUsers | Remove-AppxPackage -AllUsers -ErrorAction Continue
-        Write-Host "Removed $app successfully."
+        Write-Host "$app has been removed."
     }
     catch {
-        Write-Host "Failed to remove $app!"
+        Write-Host ">> Failed to remove $app."
         Write-Host $psitem.Exception.StackTrace
     }
 
@@ -131,7 +131,7 @@ foreach ($app in $applist) {
         Get-AppxProvisionedPackage -Online | Where-Object { $_.PackageName -like $app } | ForEach-Object { Remove-ProvisionedAppxPackage -Online -AllUsers -PackageName $_.PackageName }
     }
     catch {
-        Write-Host "Failed to remove $app!"
+        Write-Host ">> Failed to remove $app."
         Write-Host $psitem.Exception.StackTrace
     }
 }
@@ -155,33 +155,37 @@ $features = @(
     "Settings_365_Ads"
 )
 
-Write-Host "---------------------"
-Write-Host "Disabling features..."
-Write-Host "---------------------"
+Write-Host "------------------------"
+Write-Host "-- Disabling features --"
+Write-Host "------------------------"
 Write-Host ""
 foreach ($feature in $features) {
     try {
-        Write-Host "Attempting to disable $feature..."
+        Write-Host ">> Attempting to disable $feature..."
         reg import "$PSScriptRoot\RegFiles\Disable_$($feature).reg"
-        Write-Host "Disabled $feature"
+        Write-Host "$feature has been disabled."
     }
     catch {
-        Write-Host "Unable to disable $feature features for all users"
+        Write-Host ">> Failed to disable $feature."
         Write-Host $psitem.Exception.StackTrace
     }
 }
 Write-Host ""
 
-Write-Host "--------------------------------------"
-Write-Host "Bloatware removal complete!"
-Write-Host "NOTE: A system restart is recommended."
-Write-Host "--------------------------------------"
+Write-Host "-------------------------------------------"
+Write-Host "-- Bloatware removal complete!           --"
+Write-Host "-- NOTE: A system restart is recommended --"
+Write-Host "-------------------------------------------"
 Write-Host ""
 
 # Ask for restart
-$restart = Read-Host "Would you like to restart now? (Y/N)"
+$restart = Read-Host ">> Would you like to restart now? (Y/N)"
 if ($restart -eq 'Y' -or $restart -eq 'y') {
     Write-Host "Restarting in 10 seconds..."
     Start-Sleep -Seconds 10
     Restart-Computer -Force
+}
+else {
+    Write-Host "Bye."
+    Start-Sleep -Seconds 3
 }
