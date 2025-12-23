@@ -11,8 +11,8 @@
 
 #Requires -RunAsAdministrator
 
-# List of common bloatware Appx packages
-$appslist = @(
+# List of common bloatware Appx packages, remove to keep
+$applist = @(
     "Clipchamp.Clipchamp"
     "Microsoft.3DBuilder"
     "Microsoft.549981C3F5F10" # Cortana
@@ -108,23 +108,23 @@ $appslist = @(
     "TuneInRadio"
     "Twitter"
     "Viber"
-    "Wunderlist" # To-do list app (Acquired by Microsoft, functionality moved to Microsoft To Do)
+    "Wunderlist" # To-do list app (Acquired by Microsoft)
 )
 
 Write-Host "---------------------"
 Write-Host "Removing Bloatware..."
 Write-Host "---------------------"
 Write-Host ""
-foreach ($app in $appslist) {
+foreach ($app in $applist) {
     Write-Host "Attempting to remove $app..."
     # Use Remove-AppxPackage to remove all other apps
     $app = '*' + $app + '*'
     try {
         Get-AppxPackage -Name $app -AllUsers | Remove-AppxPackage -AllUsers -ErrorAction Continue
-        Write-Host "Removed $app for all users"
+        Write-Host "Removed $app successfully."
     }
     catch {
-        Write-Host "Unable to remove $app for all users"
+        Write-Host "Failed to remove $app!"
         Write-Host $psitem.Exception.StackTrace
     }
 
@@ -133,25 +133,28 @@ foreach ($app in $appslist) {
         Get-AppxProvisionedPackage -Online | Where-Object { $_.PackageName -like $app } | ForEach-Object { Remove-ProvisionedAppxPackage -Online -AllUsers -PackageName $_.PackageName }
     }
     catch {
-        Write-Host "Unable to remove $app from windows image"
+        Write-Host "Failed to remove $app!"
         Write-Host $psitem.Exception.StackTrace
     }
 }
 Write-Host ""
 
-# Disable features by reg files
+# List of features in .\RegFiles without 'Disable_' prefix and '.reg' suffix
+# remove to keep enabled
 $features = @(
     "AI_Recall"
-    "Bing_Cortana_In_Search"
     "Copilot"
+    "Telemetry"
+    "Bing_Cortana_In_Search"
     "Edge_AI_Features"
     "Edge_Ads_And_Suggestions"
     "Lockscreen_Tips"
+    "Windows_Suggestions"
+    "Desktop_Spotlight"
+    "Widgets_Service"
     "Notepad_AI_Features"
     "Paint_AI_Features"
     "Settings_365_Ads"
-    "Telemetry"
-    "Windows_Suggestions"
 )
 
 Write-Host "---------------------"
