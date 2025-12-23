@@ -3,5 +3,6 @@
 - Right-click on Run.bat and select "Run as Administrator"
 -----
 
+* Make sure you check every item specified in `DeBloatW11.ps1`, and feel free to remove any items you would like to keep.
 * If you get execution policy errors, run
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
