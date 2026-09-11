@@ -1,0 +1,9 @@
+Windows Registry Editor Version 5.00
+
+; Disabling this breaks Feedback Hub and Get-WindowsUpdateLog.
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\DiagTrack]
+"Start"=dword:00000004
+
+; Disabling this breaks MDM/Intune enrollment.
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\dmwappushservice]
+"Start"=dword:00000004

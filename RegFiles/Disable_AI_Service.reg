@@ -1,0 +1,5 @@
+Windows Registry Editor Version 5.00
+
+; Disables WSAIFabricSvc entirely - also breaks Windows Studio Effects and Click to Do on Copilot+ PCs.
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WSAIFabricSvc]
+"Start"=dword:00000004

@@ -1,0 +1,14 @@
+Windows Registry Editor Version 5.00
+
+; Stops Windows from re-installing/suggesting removed apps after an update or for a new profile.
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\CloudContent]
+"DisableWindowsConsumerFeatures"=dword:00000001
+"DisableCloudOptimizedContent"=dword:00000001
+"DisableSoftLanding"=dword:00000001
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager]
+"ContentDeliveryAllowed"=dword:00000000
+"PreInstalledAppsEnabled"=dword:00000000
+"OemPreInstalledAppsEnabled"=dword:00000000
+"PreInstalledAppsEverEnabled"=dword:00000000
+"FeatureManagementEnabled"=dword:00000000
