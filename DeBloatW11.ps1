@@ -124,11 +124,19 @@ foreach ($app in $applist) {
     $provisioned = Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue |
         Where-Object { $_.PackageName -like $pattern }
 
+    if (-not $installed -and -not $provisioned) {
+        Write-Host "SKIPPED $app - not installed"
+        continue
+    }
+
+    $failed = $false
+
     if ($installed) {
         try {
             $installed | Remove-AppxPackage -AllUsers -ErrorAction Stop
         }
         catch {
+            $failed = $true
             Write-Host "FAILED to remove $app - $($_.Exception.Message)"
         }
     }
@@ -140,9 +148,12 @@ foreach ($app in $applist) {
             }
         }
         catch {
+            $failed = $true
             Write-Host "FAILED to remove provisioned $app - $($_.Exception.Message)"
         }
     }
+
+    if (-not $failed) { Write-Host "REMOVED $app" }
 }
 Write-Host ""
 
@@ -166,7 +177,10 @@ $oneDriveSetupPaths = @(
 
 $oneDrivePresent = [bool]($oneDriveProcess -or $oneDriveViaWinget -or $oneDriveSetupPaths)
 
-if ($oneDrivePresent) {
+if (-not $oneDrivePresent) {
+    Write-Host "SKIPPED OneDrive - not installed"
+}
+else {
     if ($oneDriveProcess) { $oneDriveProcess | Stop-Process -Force -ErrorAction SilentlyContinue }
 
     $removed = $false
@@ -186,9 +200,8 @@ if ($oneDrivePresent) {
         }
     }
 
-    if (-not $removed) {
-        Write-Host "FAILED to remove OneDrive - no removal method succeeded"
-    }
+    if ($removed) { Write-Host "REMOVED OneDrive" }
+    else { Write-Host "FAILED to remove OneDrive - no removal method succeeded" }
 }
 Write-Host ""
 
@@ -202,7 +215,10 @@ $regFiles = Get-ChildItem -Path "$PSScriptRoot\RegFiles\*.reg" -ErrorAction Sile
 
 foreach ($file in $regFiles) {
     reg import "$($file.FullName)" 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) {
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "APPLIED $($file.Name)"
+    }
+    else {
         Write-Host "FAILED to import $($file.Name) (reg exit $LASTEXITCODE)"
     }
 }
@@ -236,13 +252,18 @@ foreach ($task in $tasks) {
         $taskObj = Get-ScheduledTask -TaskPath $task.Path -TaskName $task.Name -ErrorAction Stop
     }
     catch {
-        continue # Task doesn't exist on this build - nothing to do.
+        Write-Host "SKIPPED $taskId - not found"
+        continue
     }
 
-    if ($taskObj.State -eq 'Disabled') { continue }
+    if ($taskObj.State -eq 'Disabled') {
+        Write-Host "SKIPPED $taskId - already disabled"
+        continue
+    }
 
     try {
         Disable-ScheduledTask -TaskPath $task.Path -TaskName $task.Name -ErrorAction Stop | Out-Null
+        Write-Host "DISABLED $taskId"
     }
     catch {
         # Some tasks are TrustedInstaller-owned and refuse even as Administrator.
