@@ -1,12 +1,11 @@
 Windows Registry Editor Version 5.00
 
-; Disable Bing in search
+; Disable File Explorer search-box suggestions (not "Bing in search" - this key
+; controls Explorer's recent-search-entries dropdown, confirmed against current docs)
 [HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Explorer]
 "DisableSearchBoxSuggestions"=dword:00000001
 
-; Disable Cortana in search
+; Disable Cortana in search. Cortana the standalone app was removed from Windows in
+; 2023, so this is now a legacy no-op kept for older builds where it still applies.
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search]
 "AllowCortana"=dword:00000000
-"CortanaConsent"=dword:00000000
-
-

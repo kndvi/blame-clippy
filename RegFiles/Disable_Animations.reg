@@ -9,3 +9,8 @@ Windows Registry Editor Version 5.00
 
 [HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced]
 "TaskbarAnimations"=dword:00000000
+
+; Without this the Settings UI shows a state inconsistent with the registry above.
+; 3 = Custom, matching that only specific effects (not all of them) are disabled here.
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects]
+"VisualFXSetting"=dword:00000003

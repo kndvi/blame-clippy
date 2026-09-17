@@ -1,13 +1,15 @@
 Windows Registry Editor Version 5.00
 
+; Most values below are Entra/work-account (AAD) scoped and may show as "not applied"
+; in edge://policy on a personal Microsoft-account profile. Only GenAILocalFoundationalModelSettings
+; and Microsoft365CopilotChatIconEnabled are confirmed to apply to MSA profiles. Kept anyway:
+; Windows launches Edge on its own for help links, Search/Settings deep links and PDFs.
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge]
-"CopilotCDPPageContext"=dword:00000000
 "CopilotPageContext"=dword:00000000
 "HubsSidebarEnabled"=dword:00000000
+"Microsoft365CopilotChatIconEnabled"=dword:00000000
 "EdgeEntraCopilotPageContext"=dword:00000000
 "EdgeHistoryAISearchEnabled"=dword:00000000
 "ComposeInlineEnabled"=dword:00000000
 "GenAILocalFoundationalModelSettings"=dword:00000001
 "NewTabPageBingChatEnabled"=dword:00000000
-
-

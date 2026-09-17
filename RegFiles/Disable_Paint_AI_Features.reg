@@ -4,7 +4,8 @@ Windows Registry Editor Version 5.00
 "DisableCocreator"=dword:00000001
 "DisableGenerativeFill"=dword:00000001
 "DisableImageCreator"=dword:00000001
+; DisableGenerativeErase / DisableRemoveBackground are not confirmed in any current
+; Microsoft policy documentation (zero hits on learn.microsoft.com as of this check) -
+; kept since harmless if wrong, but treat as unverified pending an official source.
 "DisableGenerativeErase"=dword:00000001
 "DisableRemoveBackground"=dword:00000001
-
-

@@ -1,14 +1,20 @@
 Windows Registry Editor Version 5.00
 
+; ShowCopilotButton is undocumented (no learn.microsoft.com page), and largely moot
+; now that Copilot is an ordinary Store app - removing Microsoft.Copilot via Appx
+; (see DeBloatW11.ps1) is the control that actually works on a current build.
 ; Disable Copilot button on taskbar
 [HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced]
 "ShowCopilotButton"=dword:00000000
 
+; TurnOffWindowsCopilot is deprecated (Microsoft: "may be removed in a future
+; release") and not listed past Windows 11 23H2. It is documented as User
+; Configuration only - the HKLM copy below is outside documented scope and is
+; likely a no-op. Kept as legacy belt-and-braces; the Appx removal is the real fix.
 ; Disable Copilot service for current user
 [HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\WindowsCopilot]
 "TurnOffWindowsCopilot"=dword:00000001
 
-; Disable Copilot service for all users
+; Disable Copilot service for all users (undocumented scope - see comment above)
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot]
 "TurnOffWindowsCopilot"=dword:00000001
-

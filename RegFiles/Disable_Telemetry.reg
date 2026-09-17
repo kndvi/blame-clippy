@@ -31,14 +31,17 @@ Windows Registry Editor Version 5.00
 [HKEY_CURRENT_USER\Software\Microsoft\Personalization\Settings]
 "AcceptedPrivacyPolicy"=dword:00000000
 
-; Send only Required Diagnostic and Usage Data
-[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection]
-"AllowTelemetry"=dword:00000000
-
-; Same via the canonical Group Policy key - Home/Pro editions clamp this to 1 regardless.
+; AllowTelemetry=0 (Security/Off) is Enterprise/Education/Server-only; on Pro and Home
+; it is silently clamped to 1 (Required) - Microsoft: "Using this setting on other
+; devices is equivalent to setting the value of 1." Writing 1 explicitly rather than
+; pretending 0 does something. DiagTrack (Disable_Telemetry_Services.reg) carries the
+; real reduction on this edition, since it isn't clamped.
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection]
-"AllowTelemetry"=dword:00000000
+"AllowTelemetry"=dword:00000001
 "DoNotShowFeedbackNotifications"=dword:00000001
+"DisableOneSettingsDownloads"=dword:00000001
+"LimitDumpCollection"=dword:00000001
+"LimitDiagnosticLogCollection"=dword:00000001
 
 ; Disable Let Windows improve Start and search results by tracking app launches
 [HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced]
@@ -55,6 +58,12 @@ Windows Registry Editor Version 5.00
 
 ; Disable personalization of ads, Edge, search and news via browsing data sent to Microsoft
 ; Disable required and optional diagnostic data about browser usage
+; Note: PersonalizationReportingEnabled's own Microsoft doc opens with "This policy
+; prevents Microsoft from collecting...", which reads inverted against its own GP title
+; ("Allow personalization..."). 0 is correct here (it's a Boolean policy, 0=Disabled
+; against the Allow-titled policy) - don't "fix" this to 1.
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge]
 "PersonalizationReportingEnabled"=dword:00000000
 "DiagnosticData"=dword:00000000
+"UrlDiagnosticDataEnabled"=dword:00000000
+"Edge3PSerpTelemetryEnabled"=dword:00000000

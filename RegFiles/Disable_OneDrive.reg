@@ -3,3 +3,9 @@ Windows Registry Editor Version 5.00
 ; Prevents OneDrive from reinstalling/re-syncing after DeBloatW11.ps1 uninstalls it.
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\OneDrive]
 "DisableFileSyncNGSC"=dword:00000001
+
+; Current documented control for blocking personal-account OneDrive sync (different
+; hive/key than the legacy value above - kept both since the legacy one may still
+; ship in some OneDrive.admx versions).
+[HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\OneDrive]
+"DisablePersonalSync"=dword:00000001

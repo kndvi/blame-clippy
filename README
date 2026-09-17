@@ -1,8 +1,13 @@
 - Hit three-dots on the right-hand side to Download ZIP
 - Unzip and navigate in
-- Right-click on Run.bat and select "Run as Administrator"
+- Right-click on RunAnw.bat and select "Run as Administrator"
+- Follow the prompts
 -----
 
-* Make sure you check every item specified in `DeBloatW11.ps1`, and feel free to remove any items you would like to keep.
-* If you get execution policy errors, run
-> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+* Delete a line from the app list in `F8ForSafeMode.ps1` to keep that app installed.
+* Delete a file from `RegFiles/` to skip that tweak.
+* Safe to re-run any time.
+
+Advanced - run F8ForSafeMode.ps1 directly in an elevated PowerShell window (instead of RunAnw.bat) if you need:
+* -VibeCheck to check what's actually applied without changing anything
+* -ThisPCIsGenuinelyMine to skip the managed-device check (only if you're sure this is your machine)

@@ -2,10 +2,135 @@
 .SYNOPSIS
     Removes bloatware and OneDrive, and applies privacy/telemetry registry and scheduled-task tweaks.
 .NOTES
-    Run via Run.bat (Run as Administrator). Safe to re-run. Derived from https://github.com/Raphire/Win11Debloat
+    Run via RunAnw.bat (Run as Administrator). Safe to re-run. Derived from https://github.com/Raphire/Win11Debloat
+    For a personal laptop only - refuses to run on a device that looks corporate-managed.
+    Pass -ThisPCIsGenuinelyMine to override that check, or -VibeCheck to check applied state without changing anything.
 #>
 
 #Requires -RunAsAdministrator
+
+param(
+    [switch]$ThisPCIsGenuinelyMine,
+    [switch]$VibeCheck
+)
+
+# --- Vibe check: report drift against RegFiles\*.reg and exit, no changes made. ---
+
+function Get-RegFiles {
+    Get-ChildItem -Path "$PSScriptRoot\RegFiles\*.reg" -ErrorAction SilentlyContinue | Sort-Object Name
+}
+
+function Get-RegFileEntries {
+    param([string]$Path)
+
+    $entries = @()
+    $currentKey = $null
+
+    Get-Content -LiteralPath $Path -Encoding Unicode | ForEach-Object {
+        $line = $_.Trim()
+        if ($line -match '^\[-?(.+)\]$') {
+            $currentKey = $Matches[1]
+        }
+        elseif ($currentKey -and $line -match '^"([^"]+)"=(.+)$') {
+            $entries += [PSCustomObject]@{ Key = $currentKey; Name = $Matches[1]; Value = $Matches[2] }
+        }
+    }
+
+    return $entries
+}
+
+function ConvertTo-RegPath {
+    param([string]$Key)
+    switch -Regex ($Key) {
+        '^HKEY_LOCAL_MACHINE\\(.*)$' { return "HKLM:\$($Matches[1])" }
+        '^HKEY_CURRENT_USER\\(.*)$' { return "HKCU:\$($Matches[1])" }
+        '^HKEY_USERS\\(.*)$' { return "Registry::HKEY_USERS\$($Matches[1])" }
+        default { return $null }
+    }
+}
+
+function Invoke-VibeCheck {
+    foreach ($file in Get-RegFiles) {
+        foreach ($entry in Get-RegFileEntries -Path $file.FullName) {
+            $path = ConvertTo-RegPath -Key $entry.Key
+            if (-not $path) { continue }
+            $label = "$($file.Name): $($entry.Key)\$($entry.Name)"
+
+            if ($entry.Value -eq '-') {
+                $current = if (Test-Path $path) { Get-ItemProperty -Path $path -Name $entry.Name -ErrorAction SilentlyContinue } else { $null }
+                if ($null -eq $current) { Write-Host "OK       $label" } else { Write-Host "DRIFTED  $label (expected absent, still present)" }
+                continue
+            }
+
+            if (-not (Test-Path $path)) { Write-Host "MISSING  $label (key does not exist)"; continue }
+            $current = Get-ItemProperty -Path $path -Name $entry.Name -ErrorAction SilentlyContinue
+            if ($null -eq $current) { Write-Host "MISSING  $label"; continue }
+
+            $currentValue = $current.$($entry.Name)
+            if ($entry.Value -match '^dword:([0-9a-fA-F]+)$') {
+                $expected = [Convert]::ToInt64($Matches[1], 16)
+                # Registry DWORDs read back as signed Int32 (e.g. 0xFFFFFFFF -> -1);
+                # compare via a common unsigned 32-bit view so sign doesn't cause a false DRIFTED.
+                $currentUnsigned = [int64]$currentValue -band 0xFFFFFFFFL
+                if ($currentUnsigned -eq $expected) { Write-Host "OK       $label" }
+                else { Write-Host "DRIFTED  $label (expected $expected, found $currentValue)" }
+            }
+            elseif ($entry.Value -match '^"(.*)"$') {
+                $expected = $Matches[1]
+                if ($currentValue -eq $expected) { Write-Host "OK       $label" }
+                else { Write-Host "DRIFTED  $label (expected '$expected', found '$currentValue')" }
+            }
+            else {
+                Write-Host "SKIPPED  $label (unsupported value format for verify)"
+            }
+        }
+    }
+}
+
+if ($VibeCheck) {
+    Invoke-VibeCheck
+    return
+}
+
+# --- Refuse to run on a device that looks corporate-managed. ---
+
+if (-not $ThisPCIsGenuinelyMine) {
+    $reasons = @()
+
+    $dsregText = ""
+    try { $dsregText = (dsregcmd /status 2>$null) -join "`n" } catch { }
+    if ($dsregText -match 'AzureAdJoined\s*:\s*YES' -or $dsregText -match 'DomainJoined\s*:\s*YES' -or $dsregText -match 'EnterpriseJoined\s*:\s*YES') {
+        $reasons += "dsregcmd reports this device is joined (Azure AD / Domain / Enterprise)"
+    }
+
+    if ((Get-CimInstance Win32_ComputerSystem).PartOfDomain) {
+        $reasons += "this device is domain-joined (Win32_ComputerSystem.PartOfDomain)"
+    }
+
+    if (Test-Path 'HKLM:\SOFTWARE\Microsoft\Enrollments') {
+        $enrolled = Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\Enrollments' -ErrorAction SilentlyContinue |
+            Get-ItemProperty -ErrorAction SilentlyContinue |
+            Where-Object { $_.EnrollmentState -eq 1 -or $_.ProviderID }
+        if ($enrolled) { $reasons += "an active MDM enrollment was found under HKLM\SOFTWARE\Microsoft\Enrollments" }
+    }
+
+    if ($reasons.Count -gt 0) {
+        Write-Host "This device looks corporate-managed:"
+        $reasons | ForEach-Object { Write-Host " - $_" }
+        Write-Host ""
+        Write-Host "This script is meant for a personal, unmanaged laptop only - it disables"
+        Write-Host "dmwappushservice, which breaks MDM/Intune enrollment."
+        Write-Host ""
+        # RunAnw.bat launches this with no arguments, so -ThisPCIsGenuinelyMine can't be passed
+        # through - ask interactively rather than only exiting, in case this is a false
+        # positive (e.g. leftover MDM enrollment remnants from a past unenrollment).
+        $confirm = Read-Host ">> Is this really your personal machine? Continue anyway? (Y/N)"
+        if ($confirm -ne 'Y' -and $confirm -ne 'y') {
+            Write-Host "Refusing to run. Pass -ThisPCIsGenuinelyMine to skip this check next time."
+            exit 1
+        }
+    }
+}
 
 # Appx packages to remove; delete a line to keep that app installed.
 $applist = @(
@@ -48,8 +173,8 @@ $applist = @(
     "MicrosoftCorporationII.QuickAssist"
     "MicrosoftTeams"
     "MSTeams"
-    "Microsoft.Windows.Recall"
-    "Microsoft.Recall"
+    "Microsoft.Windows.Recall" # Not a real Appx as of 25H2 (Recall ships as an optional
+    "Microsoft.Recall"         # feature, removed below) - kept as a free hedge in case that changes
     "Microsoft.BingSearch"
     "Microsoft.OutlookForWindows"
     "Microsoft.StartExperiencesApp"
@@ -60,7 +185,8 @@ $applist = @(
     "MicrosoftWindows.CrossDevice" # Phone Link successor
     "Microsoft.GetHelp"
     "Microsoft.Getstarted"
-    "Microsoft.Windows.Ai.Copilot.Provider" # Edge Copilot provider shim
+    "Microsoft.Windows.AIHub" # Copilot+ AI Hub app
+    "Microsoft.PCManager" # Microsoft's own PC-cleanup/optimizer app
     # Third-party bloatware
     "ACGMediaPlayer"
     "ActiproSoftwareLLC"
@@ -129,6 +255,10 @@ foreach ($app in $applist) {
         continue
     }
 
+    # $pattern is a wildcard, not an exact name - log what it actually matched.
+    $matchedNames = @($installed | ForEach-Object { $_.PackageFullName }) + @($provisioned | ForEach-Object { $_.PackageName }) |
+        Sort-Object -Unique
+
     $failed = $false
 
     if ($installed) {
@@ -153,7 +283,33 @@ foreach ($app in $applist) {
         }
     }
 
-    if (-not $failed) { Write-Host "REMOVED $app" }
+    if (-not $failed) { Write-Host "REMOVED $app (matched: $($matchedNames -join ', '))" }
+}
+Write-Host ""
+
+# Recall ships as a Windows optional feature (Copilot+ PCs only), not an Appx package -
+# the applist above can't remove it. Absent entirely on non-Copilot+ hardware.
+Write-Host "------------------------"
+Write-Host "-- Removing Recall    --"
+Write-Host "------------------------"
+Write-Host ""
+
+$recallFeature = Get-WindowsOptionalFeature -Online -FeatureName "Recall" -ErrorAction SilentlyContinue
+
+if (-not $recallFeature) {
+    Write-Host "SKIPPED Recall - optional feature not present on this device"
+}
+elseif ($recallFeature.State -eq 'Disabled') {
+    Write-Host "SKIPPED Recall - already disabled"
+}
+else {
+    try {
+        Disable-WindowsOptionalFeature -Online -FeatureName "Recall" -Remove -NoRestart -ErrorAction Stop | Out-Null
+        Write-Host "REMOVED Recall (restart required to finish)"
+    }
+    catch {
+        Write-Host "FAILED to remove Recall - $($_.Exception.Message)"
+    }
 }
 Write-Host ""
 
@@ -214,12 +370,13 @@ Write-Host ""
 $regFiles = Get-ChildItem -Path "$PSScriptRoot\RegFiles\*.reg" -ErrorAction SilentlyContinue | Sort-Object Name
 
 foreach ($file in $regFiles) {
-    reg import "$($file.FullName)" 2>&1 | Out-Null
+    $output = reg import "$($file.FullName)" 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "APPLIED $($file.Name)"
     }
     else {
         Write-Host "FAILED to import $($file.Name) (reg exit $LASTEXITCODE)"
+        $output | ForEach-Object { Write-Host "  $_" }
     }
 }
 Write-Host ""
@@ -232,6 +389,7 @@ $tasks = @(
     @{ Path = "\Microsoft\Windows\Application Experience\"; Name = "StartupAppTask" } # Removes the "too many startup apps" notification
     @{ Path = "\Microsoft\Windows\Customer Experience Improvement Program\"; Name = "Consolidator" }
     @{ Path = "\Microsoft\Windows\Customer Experience Improvement Program\"; Name = "UsbCeip" }
+    @{ Path = "\Microsoft\Windows\Customer Experience Improvement Program\"; Name = "KernelCeipTask" }
     @{ Path = "\Microsoft\Windows\DiskDiagnostic\"; Name = "Microsoft-Windows-DiskDiagnosticDataCollector" } # Upload only - do not touch the Resolver task
     @{ Path = "\Microsoft\Windows\Autochk\"; Name = "Proxy" }
     @{ Path = "\Microsoft\Windows\Feedback\Siuf\"; Name = "DmClient" }

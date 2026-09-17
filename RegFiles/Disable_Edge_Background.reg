@@ -1,0 +1,25 @@
+Windows Registry Editor Version 5.00
+
+; Stops Edge from running in the background even though it's never launched.
+; Edge Update itself is deliberately left alone (Disable_Edge_Background.reg does not
+; touch edgeupdate/edgeupdatem) so security patches for Edge and the shared WebView2
+; runtime keep arriving.
+
+; Prevent Edge processes starting at sign-in and restarting after the last window closes
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge]
+"BackgroundModeEnabled"=dword:00000000
+"StartupBoostEnabled"=dword:00000000
+"LaunchEdgeOnWindowsStartupEnabled"=dword:00000000
+
+; Blocks the pipeline that downloads config files and ML models in the background
+"EdgeAssetDeliveryServiceEnabled"=dword:00000000
+
+; Cuts Edge's experimentation/config-service callbacks. Microsoft doesn't recommend
+; this setting, but on an unmanaged device it's fully on by default, so this is a
+; real reduction with no security-patch impact.
+"ExperimentationAndConfigurationServiceControl"=dword:00000000
+
+; Same, but for the updater - the one Edge component that phones home whether or not
+; the browser ever runs. Stops that traffic without touching update delivery.
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\EdgeUpdate]
+"UpdaterExperimentationAndConfigurationServiceControl"=dword:00000000

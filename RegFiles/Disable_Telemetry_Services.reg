@@ -1,6 +1,9 @@
 Windows Registry Editor Version 5.00
 
-; Disabling this breaks Feedback Hub and Get-WindowsUpdateLog.
+; Disabling this breaks Feedback Hub and Get-WindowsUpdateLog (can't diagnose Windows
+; Update failures after the fact). Security updates and Defender are unaffected.
+; Kept disabled deliberately: it's the strongest telemetry cut available, and unlike
+; AllowTelemetry it isn't clamped on Pro/Home (see Disable_Telemetry.reg).
 [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\DiagTrack]
 "Start"=dword:00000004
 
