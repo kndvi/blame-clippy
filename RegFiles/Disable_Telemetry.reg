@@ -55,15 +55,3 @@ Windows Registry Editor Version 5.00
 [HKEY_CURRENT_USER\SOFTWARE\Microsoft\Siuf\Rules]
 "NumberOfSIUFInPeriod"=dword:00000000
 "PeriodInNanoSeconds"=-
-
-; Disable personalization of ads, Edge, search and news via browsing data sent to Microsoft
-; Disable required and optional diagnostic data about browser usage
-; Note: PersonalizationReportingEnabled's own Microsoft doc opens with "This policy
-; prevents Microsoft from collecting...", which reads inverted against its own GP title
-; ("Allow personalization..."). 0 is correct here (it's a Boolean policy, 0=Disabled
-; against the Allow-titled policy) - don't "fix" this to 1.
-[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge]
-"PersonalizationReportingEnabled"=dword:00000000
-"DiagnosticData"=dword:00000000
-"UrlDiagnosticDataEnabled"=dword:00000000
-"Edge3PSerpTelemetryEnabled"=dword:00000000

@@ -1,0 +1,18 @@
+Windows Registry Editor Version 5.00
+
+; Disables Edge sign-in and sync entirely. This is the policy that makes the rest of the
+; MSA-scoped tweaks in this folder (TrackingPrevention, SyncDisabled, EdgeCopilotEnabled,
+; and friends) actually apply - Microsoft: "Starting in Microsoft Edge version 116, certain
+; policies will not be applied to a profile that is signed in with a Microsoft account."
+; Cost: no favorites/password/tab sync, no Microsoft Rewards, no website SSO from this
+; profile. Delete this file to keep sign-in and sync - most of the other Edge tweaks in
+; this folder go quiet the moment you sign back in, so deleting it isn't free.
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge]
+"BrowserSignin"=dword:00000000
+"SyncDisabled"=dword:00000001
+
+; Required alongside BrowserSignin=0 - Microsoft's own doc for NonRemovableProfileEnabled
+; says so explicitly, since that policy otherwise creates an automatically signed-in
+; browser profile. ImplicitSignInEnabled is deliberately left out: its own doc says it
+; "doesn't take any effect" once BrowserSignin is set to Disable.
+"NonRemovableProfileEnabled"=dword:00000000

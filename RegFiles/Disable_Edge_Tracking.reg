@@ -1,0 +1,46 @@
+Windows Registry Editor Version 5.00
+
+; TrackingPrevention pins Edge's own default (Balanced) rather than changing behavior -
+; written so -VibeCheck reports drift if something flips it. Strict was considered and
+; rejected: Microsoft's own doc warns "Some parts of sites might not work."
+; BlockThirdPartyCookies is a real behavior change - Edge allows third-party cookies
+; by default.
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge]
+"TrackingPrevention"=dword:00000002
+"BlockThirdPartyCookies"=dword:00000001
+
+; Keystroke-level suggestion sources. SearchSuggestEnabled stops every character typed
+; in the address bar from being sent to the default search provider for live suggestions;
+; local history/favorites suggestions still work (LocalProvidersEnabled is left alone).
+"SearchSuggestEnabled"=dword:00000000
+"AddressBarTrendingSuggestEnabled"=dword:00000000
+"AddressBarClipboardSuggestEnabled"=dword:00000000
+
+; Stops Edge from using browsing history to personalize the sidebar's "top sites"
+"PersonalizeTopSitesInCustomizeSidebarEnabled"=dword:00000000
+
+; Edge's Web Speech implementation routes voice through Azure Cognitive Services, so
+; voice data leaves the machine - worth disabling even though few sites use it.
+"SpeechRecognitionEnabled"=dword:00000000
+
+; Image hover/context-menu lookups sent to Bing
+"VisualSearchEnabled"=dword:00000000
+
+; Text typed into web forms sent to Microsoft's cloud Editor service for spell/grammar
+; checking; disabling falls back to the local Hunspell engine.
+"MicrosoftEditorProofingEnabled"=dword:00000000
+"MicrosoftEditorSynonymsEnabled"=dword:00000000
+
+; Near-symbolic in 2026 - most sites ignore it - kept because it costs nothing.
+"ConfigureDoNotTrack"=dword:00000001
+
+; Disable personalization of ads, Edge, search and news via browsing data sent to Microsoft
+; Disable required and optional diagnostic data about browser usage
+; Note: PersonalizationReportingEnabled's own Microsoft doc opens with "This policy
+; prevents Microsoft from collecting...", which reads inverted against its own GP title
+; ("Allow personalization..."). 0 is correct here (it's a Boolean policy, 0=Disabled
+; against the Allow-titled policy) - don't "fix" this to 1.
+"PersonalizationReportingEnabled"=dword:00000000
+"DiagnosticData"=dword:00000000
+"UrlDiagnosticDataEnabled"=dword:00000000
+"Edge3PSerpTelemetryEnabled"=dword:00000000

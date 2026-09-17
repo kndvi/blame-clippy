@@ -15,3 +15,16 @@ Windows Registry Editor Version 5.00
 "DefaultBrowserSettingsCampaignEnabled"=dword:00000000
 "SpotlightExperiencesAndRecommendationsEnabled"=dword:00000000
 "ShowAcrobatSubscriptionButton"=dword:00000000
+
+; New tab page quick links and the Microsoft 365 app launcher
+"NewTabPageQuickLinksEnabled"=dword:00000000
+"NewTabPageAppLauncherEnabled"=dword:00000000
+
+; PromotionalTabsEnabled is flagged deprecated upstream but still governs the full-tab
+; welcome/default-browser pages, and is MSA-scoped "Yes" so it's worth keeping.
+"PromotionalTabsEnabled"=dword:00000000
+
+; ShowMicrosoftRewards: source conflict worth recording rather than resolving - the
+; policy's own description talks entirely about Microsoft-account users, yet its
+; MSA-applies flag reads "No". Kept disabled regardless.
+"ShowMicrosoftRewards"=dword:00000000

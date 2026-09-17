@@ -1,0 +1,27 @@
+Windows Registry Editor Version 5.00
+
+; Drop (send yourself files/messages), the offline surf game, and the QR code generator
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge]
+"EdgeEDropEnabled"=dword:00000000
+"AllowSurfGame"=dword:00000000
+"QRCodeGeneratorEnabled"=dword:00000000
+
+; Edge Workspaces, and shared links from Microsoft 365 apps showing up in History
+"EdgeWorkspacesEnabled"=dword:00000000
+"SharedLinksEnabled"=dword:00000000
+
+; Sidebar surfaces: Standalone Sidebar mode and the sidebar customize page
+"StandaloneHubsSidebarEnabled"=dword:00000000
+"EdgeSidebarCustomizeEnabled"=dword:00000000
+
+; SearchInSidebarEnabled is an Integer, not a Boolean - 2 = DisableSearchInSidebar.
+; Don't "tidy" this to dword:00000000 assuming it's a plain toggle.
+"SearchInSidebarEnabled"=dword:00000002
+
+; Browser essentials toolbar button, and the Edge Insider promo on the About page
+"PinBrowserEssentialsToolbarButton"=dword:00000000
+"MicrosoftEdgeInsiderPromotionEnabled"=dword:00000000
+
+; Nag to set Edge as the default PDF handler, and the in-browser wallet checkout flow
+"ShowPDFDefaultRecommendationsEnabled"=dword:00000000
+"EdgeWalletCheckoutEnabled"=dword:00000000
